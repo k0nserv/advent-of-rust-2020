@@ -29,6 +29,10 @@ pub fn star_two(input: &str) -> usize {
 
     for x in &sorted_numbers {
         for y in &sorted_numbers {
+            if x + y > 2020 {
+                break;
+            }
+
             for z in &sorted_numbers {
                 match x + y + z {
                     2020 => return x * y * z,
