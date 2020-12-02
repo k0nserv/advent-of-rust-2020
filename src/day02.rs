@@ -60,13 +60,21 @@ impl FromStr for Policy {
 
         if range_parts.len() != 2 {
             return Err(format!(
-                "Invalid policy definition `{}`, expected exactly two parts of the range",
+                "Invalid policy definition `{}`, expected exactly two parts for the range",
+                s
+            ));
+        }
+        let required_char = require_part.and_then(|p| p.trim().chars().take(1).next());
+
+        if required_char.is_none() {
+            return Err(format!(
+                "Invalid policy definition `{}`, expected password",
                 s
             ));
         }
 
         Ok(Self {
-            required_char: require_part.unwrap().trim().chars().take(1).next().unwrap(),
+            required_char: required_char.unwrap(),
             range: RangeInclusive::new(range_parts[0], range_parts[1]),
         })
     }
