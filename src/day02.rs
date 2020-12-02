@@ -11,29 +11,30 @@ struct Policy {
 
 impl Policy {
     fn is_valid_sled(&self, password: &str) -> bool {
-        let count = password.chars().fold(0, |acc, c| {
-            if self.required_char == c {
-                acc + 1
-            } else {
-                acc
-            }
-        });
+        let count = password
+            .chars()
+            .filter(|&c| self.required_char == c)
+            .count();
 
         self.range.contains(&count)
     }
 
     fn is_valid_toboggan(&self, password: &str) -> bool {
-        let count = password.chars().enumerate().fold(0, |acc, (idx, c)| {
-            match (
-                self.required_char == c,
-                *self.range.start() == idx + 1,
-                *self.range.end() == idx + 1,
-            ) {
-                (true, true, false) => acc + 1,
-                (true, false, true) => acc + 1,
-                _ => acc,
-            }
-        });
+        let count = password
+            .chars()
+            .enumerate()
+            .filter(|&(idx, c)| {
+                match (
+                    self.required_char == c,
+                    *self.range.start() == idx + 1,
+                    *self.range.end() == idx + 1,
+                ) {
+                    (true, true, false) => true,
+                    (true, false, true) => true,
+                    _ => false,
+                }
+            })
+            .count();
 
         count == 1
     }
