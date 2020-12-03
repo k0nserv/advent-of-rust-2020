@@ -196,6 +196,16 @@ mod tests {
     }
 
     #[test]
+    fn solve_day03() {
+        use crate::day03::{star_one, star_two};
+
+        let input = load_file("day03.txt");
+
+        assert_eq!(star_one(&input), 220);
+        assert_eq!(star_two(&input), 2138320800);
+    }
+
+    #[test]
     fn solve_day05() {
         use crate::day05::{star_one, star_two};
 
