@@ -1,9 +1,6 @@
 use std::convert::TryFrom;
 use std::ops::Index;
-use std::ops::RangeInclusive;
 use std::str::FromStr;
-
-use crate::parse_lines;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 enum Location {
@@ -38,27 +35,16 @@ impl FromStr for World {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let locations: Vec<Vec<_>> = s
+        let locations_result: Result<Vec<Vec<_>>, _> = s
             .lines()
             .map(str::trim)
             .filter(|s| s.len() > 0)
             .map(|l| l.chars().map(|c| Location::try_from(c)).collect())
             .collect();
 
-        let first_err = locations
-            .iter()
-            .flat_map(|line| line.iter().find(|r| r.is_err()))
-            .find(|e| e.is_err());
-
-        match first_err {
-            None => Ok(Self {
-                locations: locations
-                    .into_iter()
-                    .map(|line| line.into_iter().map(|l| l.unwrap()).collect())
-                    .collect(),
-            }),
-            Some(Err(e)) => Err(format!("Failed to parse world with error: {}", e)),
-            _ => panic!("You done messed up"),
+        match locations_result {
+            Ok(locations) => Ok(Self { locations }),
+            Err(e) => Err(format!("Failed to parse world with error: {}", e)),
         }
     }
 }
