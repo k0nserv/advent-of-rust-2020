@@ -2,63 +2,32 @@ use std::collections::HashMap;
 use std::ops::RangeInclusive;
 
 const REQUIRED_PROPS: &'static [&'static str] = &["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"];
+const BYR_VALID_RANGE: RangeInclusive<usize> = 1920..=2002;
+const IYR_VALID_RANGE: RangeInclusive<usize> = 2010..=2020;
+const EYR_VALID_RANGE: RangeInclusive<usize> = 2020..=2030;
 const VALID_CM_HEIGHTS: RangeInclusive<usize> = 150..=193;
 const VALID_IN_HEIGHTS: RangeInclusive<usize> = 59..=76;
 const VALID_EYE_COLORS: &'static [&'static str] =
     &["amb", "blu", "brn", "gry", "grn", "hzl", "oth"];
 
-#[derive(Debug)]
-struct Passport {
-    byr: String,
-    iyr: String,
-    eyr: String,
+fn is_valid<F>(s: &str, validator: F) -> bool
+where
+    F: Fn(&HashMap<&str, &str>) -> bool,
+{
+    let props: HashMap<&str, &str> = s
+        .trim()
+        .split_whitespace()
+        .flat_map(|s| {
+            let mut parts = s.split(":");
 
-    hgt: String,
+            match (parts.next(), parts.next()) {
+                (Some(key), Some(value)) => Some((key.trim(), value.trim())),
+                _ => None,
+            }
+        })
+        .collect();
 
-    hcl: String,
-    ecl: String,
-
-    pid: String,
-    cid: Option<String>,
-}
-
-impl Passport {
-    fn from_str<F>(s: &str, validator: F) -> Result<Self, String>
-    where
-        F: Fn(&HashMap<&str, &str>) -> bool,
-    {
-        let props: HashMap<&str, &str> = s
-            .trim()
-            .split_whitespace()
-            .flat_map(|s| {
-                let mut parts = s.split(":");
-
-                match (parts.next(), parts.next()) {
-                    (Some(key), Some(value)) => Some((key.trim(), value.trim())),
-                    _ => None,
-                }
-            })
-            .collect();
-        let is_valid =
-            REQUIRED_PROPS.iter().all(|key| props.contains_key(key)) && validator(&props);
-
-        match is_valid {
-            false => Err(format!("Invalid passport `{}`", s)),
-            true => Ok(Self {
-                byr: props["byr"].to_owned(),
-                iyr: props["iyr"].to_owned(),
-                eyr: props["eyr"].to_owned(),
-
-                hgt: props["hgt"].to_owned(),
-
-                hcl: props["hcl"].to_owned(),
-                ecl: props["ecl"].to_owned(),
-
-                pid: props["pid"].to_owned(),
-                cid: props.get("cid").map(|s| s.to_string()),
-            }),
-        }
-    }
+    REQUIRED_PROPS.iter().all(|key| props.contains_key(key)) && validator(&props)
 }
 
 fn number_valid(number: Option<&&str>, range: RangeInclusive<usize>) -> bool {
@@ -105,9 +74,9 @@ fn ecl_valid(ecl: Option<&&str>) -> bool {
 
 fn fields_valid(props: &HashMap<&str, &str>) -> bool {
     [
-        number_valid(props.get("byr"), 1920..=2002),
-        number_valid(props.get("iyr"), 2010..=2020),
-        number_valid(props.get("eyr"), 2020..=2030),
+        number_valid(props.get("byr"), BYR_VALID_RANGE),
+        number_valid(props.get("iyr"), IYR_VALID_RANGE),
+        number_valid(props.get("eyr"), EYR_VALID_RANGE),
         height_valid(props.get("hgt")),
         hair_color_valid(props.get("hcl")),
         ecl_valid(props.get("ecl")),
@@ -122,7 +91,7 @@ pub fn star_one(input: &str) -> usize {
         .split("\n\n")
         .map(str::trim)
         .filter(|l| l.len() > 0)
-        .flat_map(|l| Passport::from_str(l, |_| true))
+        .filter(|l| is_valid(l, |_| true))
         .count()
 }
 
@@ -131,13 +100,13 @@ pub fn star_two(input: &str) -> usize {
         .split("\n\n")
         .map(str::trim)
         .filter(|l| l.len() > 0)
-        .flat_map(|l| Passport::from_str(l, fields_valid))
+        .filter(|l| is_valid(l, fields_valid))
         .count()
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{fields_valid, star_one, star_two, Passport};
+    use super::{fields_valid, is_valid, star_one, star_two};
     const INPUT: &'static str = "ecl:gry pid:860033327 eyr:2020 hcl:#fffffd
 byr:1937 iyr:2017 cid:147 hgt:183cm
 
@@ -187,18 +156,13 @@ iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719";
     }
 
     #[test]
-    fn test_star_two() {
-        assert_eq!(star_two(""), 1)
-    }
-
-    #[test]
     fn test_invalid_passports() {
         for p in INVALID_PART_TWO
             .split("\n\n")
             .map(str::trim)
             .filter(|l| l.len() > 0)
         {
-            assert_eq!(Passport::from_str(p, fields_valid).is_ok(), false);
+            assert_eq!(is_valid(p, fields_valid), false);
         }
     }
 
@@ -210,7 +174,7 @@ iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719";
             .filter(|l| l.len() > 0)
         {
             assert_eq!(
-                Passport::from_str(p, fields_valid).is_ok(),
+                is_valid(p, fields_valid),
                 true,
                 "{} should be valid, but wasn't",
                 p
