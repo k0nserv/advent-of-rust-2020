@@ -56,10 +56,9 @@ fn height_valid(height: Option<&&str>) -> bool {
 }
 
 fn hair_color_valid(hcl: Option<&&str>) -> bool {
-    match hcl.and_then(|s| s.strip_prefix('#')) {
-        Some(rest) => u32::from_str_radix(rest, 16).is_ok(),
-        None => false,
-    }
+    hcl.and_then(|s| s.strip_prefix('#'))
+        .map(|rest| u32::from_str_radix(rest, 16).is_ok())
+        .unwrap_or(false)
 }
 
 fn pid_valid(pid: Option<&&str>) -> bool {
