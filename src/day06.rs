@@ -6,7 +6,7 @@ pub fn star_one(input: &str) -> usize {
         .map(|group| {
             group
                 .lines()
-                .flat_map(|l| l.chars())
+                .flat_map(str::chars)
                 .collect::<HashSet<_>>()
                 .len()
         })
@@ -17,7 +17,7 @@ pub fn star_two(input: &str) -> usize {
     input
         .split("\n\n")
         .map(|group| {
-            let all_chars: HashSet<_> = group.lines().flat_map(|l| l.chars()).collect();
+            let all_chars: HashSet<_> = group.lines().flat_map(str::chars).collect();
 
             group
                 .lines()
