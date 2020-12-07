@@ -6,7 +6,7 @@ use std::collections::HashMap;
 
 type BagId = usize;
 
-// An arena for bags a `Bagrena`, because doing pointers/references in Rust
+// An arena for bags, a `Bagrena`, because doing pointers/references in Rust
 // is just no fun.
 struct Bagrena {
     next: usize,
