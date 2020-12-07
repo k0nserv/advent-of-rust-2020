@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 // To say there's room for improvement in this solution is an understatement,
 // unfortunately I was very tired when I wrote this so it will have to exist
-// in all its glorious inperfection.
+// in all its glorious imperfection.
 
 type BagId = usize;
 
