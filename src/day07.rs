@@ -1,147 +1,105 @@
 use std::collections::HashMap;
+use std::str::FromStr;
 
-// To say there's room for improvement in this solution is an understatement,
-// unfortunately I was very tired when I wrote this so it will have to exist
-// in all its glorious imperfection.
+use crate::parse_lines;
 
-type BagId = usize;
-
-// An arena for bags, a `Bagrena`, because doing pointers/references in Rust
-// is just no fun.
-struct Bagrena {
-    next: usize,
-    bags: HashMap<BagId, String>,
+fn normalize_bag_name(name: &str) -> &str {
+    name.trim()
+        .trim_end_matches('.')
+        .trim_end_matches("bags")
+        .trim_end_matches("bag")
+        .trim()
 }
 
-impl Bagrena {
-    fn new() -> Self {
-        Self {
-            next: Default::default(),
-            bags: Default::default(),
-        }
-    }
-
-    fn make_or_find_bag(&mut self, name: &str) -> BagId {
-        // O(n) !!!!
-        let existing_bag = self.bags.iter().find(|&(_, v)| v == name);
-
-        match existing_bag {
-            Some((&k, _)) => k,
-            None => {
-                let id = self.next;
-                self.bags.insert(id, name.to_owned());
-                self.next += 1;
-
-                id
+fn parse_bag_list(list: &str) -> Result<Option<Vec<(usize, String)>>, String> {
+    list.split(",")
+        .map(str::trim)
+        .map(|s| {
+            if s == "no other bags." {
+                return Ok(None);
             }
-        }
-    }
 
-    fn parse_bags(&mut self, input: &str) -> Result<Vec<Bag>, String> {
-        // Forgive me, I was really tired when I wrote this...
-        input
-            .lines()
-            .map(str::trim)
-            .filter(|l| l.len() > 0)
-            .map(|l| {
-                let mut parts = l.split("contain").map(str::trim);
-                match (parts.next(), parts.next()) {
-                    (Some(name), Some(rest)) => {
-                        let name = name.trim_end_matches('.').trim_end_matches('s');
-                        let id = self.make_or_find_bag(name);
+            let mut parts = s.splitn(2, char::is_whitespace);
 
-                        let contains: Result<Option<Vec<_>>, _> = match rest {
-                            "no other bags." => Ok(None),
-                            _ => rest
-                                .split(',')
-                                .map(str::trim)
-                                .map(|b| {
-                                    let mut parts = b.splitn(2, ' ').map(str::trim);
-
-                                    match (parts.next().and_then(|c| c.parse().ok()), parts.next())
-                                    {
-                                        (Some(count), Some(name)) => {
-                                            let name =
-                                                name.trim_end_matches('.').trim_end_matches('s');
-                                            Ok(Some((count, self.make_or_find_bag(name))))
-                                        }
-                                        _ => Err(format!("Invalid contents `{}`.", rest)),
-                                    }
-                                })
-                                .collect(),
-                        };
-
-                        match contains {
-                            Err(e) => Err(format!("Invalid line `{}`. Failed with error {}", l, e)),
-                            Ok(contains) => Ok(Bag {
-                                id,
-                                name: name.to_owned(),
-                                contents: contains,
-                            }),
-                        }
-                    }
-                    (_, _) => Err(format!("invalid line `{}`", l)),
-                }
-            })
-            .collect()
-    }
+            match (parts.next(), parts.next()) {
+                (Some(count), Some(name)) => count
+                    .parse::<usize>()
+                    .map(|c| Some((c, normalize_bag_name(name).to_owned())))
+                    .map_err(|e| format!("Failed to parse bag list `{}`. Error: {}", list, e)),
+                _ => Err(format!("Failed to parse bag list `{}`", list)),
+            }
+        })
+        .collect()
 }
 
 #[derive(Debug)]
 struct Bag {
-    id: BagId,
     name: String,
-    contents: Option<Vec<(usize, BagId)>>,
+    contents: Vec<(usize, String)>,
 }
 
-fn find(id: BagId, bag_map: &HashMap<BagId, Bag>) -> bool {
-    let bag = &bag_map[&id];
-    if bag.name == "shiny gold bag" {
+impl Bag {
+    fn is_shiny(&self) -> bool {
+        self.name == "shiny gold"
+    }
+}
+
+impl FromStr for Bag {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut parts = s.split("contain");
+        let (name, rest) = match (parts.next(), parts.next()) {
+            (Some(name), Some(rest)) => Ok((normalize_bag_name(name), rest)),
+            _ => Err(format!("Invalid bag definition `{}`", s)),
+        }?;
+
+        let contents = parse_bag_list(rest)?.unwrap_or(vec![]);
+
+        Ok(Self {
+            name: name.to_owned(),
+            contents,
+        })
+    }
+}
+
+fn find(name: &str, bag_map: &HashMap<String, Bag>) -> bool {
+    let bag = &bag_map[name];
+    if bag.is_shiny() {
         return true;
     }
 
     bag.contents
-        .as_ref()
-        .map(|c| c.iter().any(|&(_, content_id)| find(content_id, bag_map)))
-        .unwrap_or(false)
+        .iter()
+        .any(|(_, content_name)| find(&content_name, bag_map))
 }
 
-fn count(id: BagId, bag_map: &HashMap<BagId, Bag>) -> usize {
-    let bag = &bag_map[&id];
+fn count(name: &str, bag_map: &HashMap<String, Bag>) -> usize {
+    let bag = &bag_map[name];
 
-    bag.contents
-        .as_ref()
-        .map(|c| {
-            c.iter().fold(0, |acc, &(b_count, b_id)| {
-                acc + b_count * (1 + count(b_id, bag_map))
-            })
-        })
-        .unwrap_or(0)
+    bag.contents.iter().fold(0, |acc, (b_count, b_name)| {
+        acc + b_count * (1 + count(&b_name, bag_map))
+    })
 }
 
 pub fn star_one(input: &str) -> usize {
-    let mut bagrena = Bagrena::new();
-    let bags = bagrena.parse_bags(input).expect("input should be parsable");
-    let bag_map: HashMap<_, _> = bags.into_iter().map(|b| (b.id, b)).collect();
+    let bags = parse_lines::<Bag>(input);
+    let bag_map: HashMap<_, _> = bags.map(|b| (b.name.clone(), b)).collect();
 
     bag_map
         .iter()
-        .filter(|&(_, b)| b.name != "shiny gold bag")
-        .filter(|&(&k, _)| find(k, &bag_map))
+        .filter(|&(_, b)| !b.is_shiny())
+        .filter(|&(k, _)| find(k, &bag_map))
         .count()
 }
 
 pub fn star_two(input: &str) -> usize {
-    let mut bagrena = Bagrena::new();
-    let bags = bagrena.parse_bags(input).expect("input should be parsable");
-    let bag_map: HashMap<_, _> = bags.into_iter().map(|b| (b.id, b)).collect();
+    let bags = parse_lines::<Bag>(input);
+    let bag_map: HashMap<_, _> = bags.map(|b| (b.name.clone(), b)).collect();
 
-    let shiny_bag = bag_map
-        .iter()
-        .find(|&(_, b)| b.name == "shiny gold bag")
-        .map(|(_, b)| b);
+    let shiny_bag = bag_map.iter().find(|&(_, b)| b.is_shiny()).map(|(_, b)| b);
 
-    shiny_bag.map(|bag| count(bag.id, &bag_map)).unwrap_or(0)
+    shiny_bag.map(|bag| count(&bag.name, &bag_map)).unwrap_or(0)
 }
 
 #[cfg(test)]
