@@ -77,7 +77,7 @@ impl VM {
         while self.ip < self.instructions.len() {
             let instruction = self.instructions[self.ip];
 
-            let (new_pc, new_acc) = match instruction {
+            let (new_ip, new_acc) = match instruction {
                 Instruction::Jmp(offset) => ((self.ip as isize) + offset, self.acc),
                 Instruction::Acc(change) => (self.ip as isize + 1, self.acc + change),
                 Instruction::Nop(_) => ((self.ip as isize + 1, self.acc)),
@@ -86,7 +86,7 @@ impl VM {
             if !executed_instructions.insert(self.ip) {
                 return HaltStatus::InfiniteLoop;
             }
-            self.ip = new_pc as usize;
+            self.ip = new_ip as usize;
             self.acc = new_acc;
         }
 
