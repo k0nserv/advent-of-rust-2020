@@ -35,8 +35,13 @@ pub fn star_two(input: &str, target: usize) -> usize {
             .find(|win| win.iter().sum::<usize>() == target)
     });
 
+    // https://www.youtube.com/watch?v=oqwzuiSy9y0
     result
-        .map(|v| v.iter().min().unwrap() + v.iter().max().unwrap())
+        .and_then(|v| {
+            v.iter()
+                .min()
+                .and_then(|min| v.iter().max().map(|max| max + min))
+        })
         .unwrap_or(0)
 }
 
