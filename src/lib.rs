@@ -167,6 +167,8 @@ mod tests {
     use std::fs::File;
     use std::io::Read;
 
+    use super::time;
+
     fn load_file(path: &str) -> String {
         let mut input = String::new();
         let mut f = File::open(path).expect("Unable to open file");
@@ -271,8 +273,10 @@ mod tests {
 
         let input = load_file("day10.txt");
 
-        assert_eq!(star_one(&input), 1);
-        assert_eq!(star_two(&input), 1);
+        assert_eq!(star_one(&input), 2484);
+        time("Day 10 Part 2", || {
+            assert_eq!(star_two(&input), 15790581481472)
+        });
     }
 
     #[test]
