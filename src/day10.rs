@@ -5,11 +5,10 @@ use crate::parse_lines;
 
 pub fn star_one(input: &str) -> usize {
     let mut adapters: HashSet<_> = {
-        let mut v: Vec<_> = parse_lines::<usize>(input).collect();
-        v.push(v.iter().max().unwrap() + 3);
-        v.sort();
+        let mut v: HashSet<_> = parse_lines::<usize>(input).collect();
+        v.insert(v.iter().max().unwrap() + 3);
 
-        v.into_iter().collect()
+        v
     };
 
     let mut jolts = 0;
@@ -35,11 +34,10 @@ pub fn star_one(input: &str) -> usize {
 
 pub fn star_two(input: &str) -> usize {
     let adapters: HashSet<_> = {
-        let mut v: Vec<_> = parse_lines::<usize>(input).collect();
-        v.push(v.iter().max().unwrap() + 3);
-        v.sort();
+        let mut v: HashSet<_> = parse_lines::<usize>(input).collect();
+        v.insert(v.iter().max().unwrap() + 3);
 
-        v.into_iter().collect()
+        v
     };
     let incoming: HashMap<usize, HashSet<_>> = adapters
         .iter()
