@@ -1,6 +1,6 @@
 use std::fmt;
 use std::hash::Hash;
-use std::ops::{Add, Neg, Sub};
+use std::ops::{Add, Mul, Neg, Sub};
 
 #[derive(Copy, Clone, Hash, PartialEq, Eq)]
 pub struct Vector2<T> {
@@ -9,7 +9,7 @@ pub struct Vector2<T> {
 }
 
 impl<T> Vector2<T> {
-    pub fn new(x: T, y: T) -> Self {
+    pub const fn new(x: T, y: T) -> Self {
         Self { x, y }
     }
 }
@@ -58,6 +58,17 @@ impl<T: Neg<Output = T> + Hash + PartialEq> Neg for Vector2<T> {
         Vector2::<T> {
             x: -self.x,
             y: -self.y,
+        }
+    }
+}
+
+impl<T: Mul<Output = T> + Copy> Mul<T> for Vector2<T> {
+    type Output = Vector2<T>;
+
+    fn mul(self, rhs: T) -> Self::Output {
+        Vector2::<T> {
+            x: self.x * rhs,
+            y: self.y * rhs,
         }
     }
 }

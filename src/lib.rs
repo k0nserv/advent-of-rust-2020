@@ -28,7 +28,7 @@ mod day21;
 mod day22;
 mod day23;
 mod day24;
-mod math;
+pub mod math;
 
 #[derive(Debug, Copy, Clone)]
 pub struct DigitIterator {
@@ -285,8 +285,10 @@ mod tests {
 
         let input = load_file("day11.txt");
 
-        assert_eq!(star_one(&input), 1);
-        assert_eq!(star_two(&input), 1);
+        assert_eq!(star_one(&input), 2346);
+        time("Day 11 Part 2", || {
+            assert_eq!(star_two(&input), 2111);
+        });
     }
 
     #[test]
