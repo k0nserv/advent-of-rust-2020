@@ -297,8 +297,8 @@ mod tests {
 
         let input = load_file("day12.txt");
 
-        assert_eq!(star_one(&input), 1);
-        assert_eq!(star_two(&input), 1);
+        assert_eq!(star_one(&input), 364);
+        assert_eq!(star_two(&input), 39518);
     }
 
     #[test]
