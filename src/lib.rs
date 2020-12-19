@@ -3,6 +3,9 @@ use std::io::Read;
 use std::str::FromStr;
 use std::time::{SystemTime, UNIX_EPOCH};
 
+#[macro_use]
+extern crate itertools;
+
 #[allow(dead_code, unused_imports)]
 mod day01;
 mod day02;
@@ -307,8 +310,8 @@ mod tests {
 
         let input = load_file("day13.txt");
 
-        assert_eq!(star_one(&input), 1);
-        assert_eq!(star_two(&input), 1);
+        assert_eq!(star_one(&input), 203);
+        assert_eq!(star_two(&input), 905694340256752);
     }
 
     #[test]
