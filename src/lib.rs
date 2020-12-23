@@ -31,7 +31,10 @@ mod day21;
 mod day22;
 mod day23;
 mod day24;
+mod either;
 pub mod math;
+
+pub use either::Either;
 
 #[derive(Debug, Copy, Clone)]
 pub struct DigitIterator {
@@ -320,8 +323,8 @@ mod tests {
 
         let input = load_file("day14.txt");
 
-        assert_eq!(star_one(&input), 1);
-        assert_eq!(star_two(&input), 1);
+        assert_eq!(star_one(&input), 11179633149677);
+        assert_eq!(star_two(&input), 4822600194774);
     }
 
     #[test]
