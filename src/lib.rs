@@ -331,10 +331,8 @@ mod tests {
     fn solve_day15() {
         use crate::day15::{star_one, star_two};
 
-        let input = load_file("day15.txt");
-
-        assert_eq!(star_one(&input), 1);
-        assert_eq!(star_two(&input), 1);
+        assert_eq!(star_one("0,20,7,16,1,18,15", 2020), 1025);
+        assert_eq!(star_two("0,20,7,16,1,18,15", 30000000), 129262);
     }
 
     #[test]
