@@ -69,8 +69,9 @@ pub fn star_one(input: &str, nth_number: usize) -> usize {
 }
 
 pub fn star_two(input: &str, nth_number: usize) -> usize {
-    // These's probably a cycle or something that can be absued to make this faster
+    // There's probably a cycle or something that can be absued to make this faster
     // but Rust is fasten enough that just doing all the calculations is fine
+    // TODO: Maybe find the fast solution
     star_one(input, nth_number)
 }
 
