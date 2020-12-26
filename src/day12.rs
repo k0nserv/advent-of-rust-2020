@@ -11,7 +11,7 @@ const WEST_VECTOR: Vector2<isize> = Vector2::new(-1, 0);
 
 fn rotate(vector: Vector2<isize>, degrees: isize) -> Vector2<isize> {
     let radians = (degrees as f64) * (PI / 180.0);
-    let (x, y) = (vector.x as f64, vector.y as f64);
+    let (x, y) = (vector.x() as f64, vector.y() as f64);
 
     let (new_x, new_y) = (
         x * radians.cos() - y * radians.sin(),

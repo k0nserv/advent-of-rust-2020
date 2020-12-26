@@ -68,10 +68,10 @@ impl fmt::Display for SeatMap {
 
 impl SeatMap {
     fn is_out_of_bounds(&self, location: Vector2<isize>) -> bool {
-        location.y < 0
-            || (location.y as usize) >= self.seats.len()
-            || location.x < 0
-            || (location.x as usize) >= self.seats[location.y as usize].len()
+        location.y() < 0
+            || (location.y() as usize) >= self.seats.len()
+            || location.x() < 0
+            || (location.x() as usize) >= self.seats[location.y() as usize].len()
     }
 
     fn adjacent_seats<'a>(&'a self, to: Vector2<isize>) -> impl Iterator<Item = Location> + 'a {
@@ -79,7 +79,7 @@ impl SeatMap {
             let location = to + dir;
 
             if !self.is_out_of_bounds(location) {
-                Some(self.seats[location.y as usize][location.x as usize])
+                Some(self.seats[location.y() as usize][location.x() as usize])
             } else {
                 None
             }
@@ -99,13 +99,13 @@ impl SeatMap {
                 })
                 .take_while(Option::is_some)
                 .map(Option::unwrap)
-                .find_map(
-                    |location| match self.seats[location.y as usize][location.x as usize] {
+                .find_map(|location| {
+                    match self.seats[location.y() as usize][location.x() as usize] {
                         l @ Location::FilledSeat => Some(l),
                         l @ Location::EmptySeat => Some(l),
                         _ => None,
-                    },
-                )
+                    }
+                })
         })
     }
 
