@@ -154,6 +154,19 @@ impl<T: fmt::Debug + Copy> fmt::Debug for Vector3<T> {
     }
 }
 
+impl<T: fmt::Debug + Copy> fmt::Debug for Vector4<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "<Vector4 x={:?} y={:?} z={:?} w={:?} >",
+            self.x(),
+            self.y(),
+            self.z(),
+            self.w()
+        )
+    }
+}
+
 pub trait Abs {
     type Output;
 
