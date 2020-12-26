@@ -2,122 +2,33 @@ use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 use std::str::FromStr;
 
+use itertools::Itertools;
+
 use crate::math::{Vector3, Vector4};
 
 // TODO: Should really use lazy static for this
-const NEIGHBOURS_3: &'static [Vector3<isize>] = &[
-    Vector3::new(0, 0, -1),
-    Vector3::new(0, 0, 1),
-    Vector3::new(0, -1, 0),
-    Vector3::new(0, -1, -1),
-    Vector3::new(0, -1, 1),
-    Vector3::new(0, 1, 0),
-    Vector3::new(0, 1, -1),
-    Vector3::new(0, 1, 1),
-    Vector3::new(-1, 0, 0),
-    Vector3::new(-1, 0, -1),
-    Vector3::new(-1, 0, 1),
-    Vector3::new(-1, -1, 0),
-    Vector3::new(-1, -1, -1),
-    Vector3::new(-1, -1, 1),
-    Vector3::new(-1, 1, 0),
-    Vector3::new(-1, 1, -1),
-    Vector3::new(-1, 1, 1),
-    Vector3::new(1, 0, 0),
-    Vector3::new(1, 0, -1),
-    Vector3::new(1, 0, 1),
-    Vector3::new(1, -1, 0),
-    Vector3::new(1, -1, -1),
-    Vector3::new(1, -1, 1),
-    Vector3::new(1, 1, 0),
-    Vector3::new(1, 1, -1),
-    Vector3::new(1, 1, 1),
-];
-
-// TODO: Should really use lazy static for this
-const NEIGHBOURS_4: &'static [Vector4<isize>] = &[
-    Vector4::new(0, 0, 0, 1),
-    Vector4::new(0, 0, 0, -1),
-    Vector4::new(0, 0, 1, 0),
-    Vector4::new(0, 0, 1, 1),
-    Vector4::new(0, 0, 1, -1),
-    Vector4::new(0, 0, -1, 0),
-    Vector4::new(0, 0, -1, 1),
-    Vector4::new(0, 0, -1, -1),
-    Vector4::new(0, 1, 0, 0),
-    Vector4::new(0, 1, 0, 1),
-    Vector4::new(0, 1, 0, -1),
-    Vector4::new(0, 1, 1, 0),
-    Vector4::new(0, 1, 1, 1),
-    Vector4::new(0, 1, 1, -1),
-    Vector4::new(0, 1, -1, 0),
-    Vector4::new(0, 1, -1, 1),
-    Vector4::new(0, 1, -1, -1),
-    Vector4::new(0, -1, 0, 0),
-    Vector4::new(0, -1, 0, 1),
-    Vector4::new(0, -1, 0, -1),
-    Vector4::new(0, -1, 1, 0),
-    Vector4::new(0, -1, 1, 1),
-    Vector4::new(0, -1, 1, -1),
-    Vector4::new(0, -1, -1, 0),
-    Vector4::new(0, -1, -1, 1),
-    Vector4::new(0, -1, -1, -1),
-    Vector4::new(1, 0, 0, 0),
-    Vector4::new(1, 0, 0, 1),
-    Vector4::new(1, 0, 0, -1),
-    Vector4::new(1, 0, 1, 0),
-    Vector4::new(1, 0, 1, 1),
-    Vector4::new(1, 0, 1, -1),
-    Vector4::new(1, 0, -1, 0),
-    Vector4::new(1, 0, -1, 1),
-    Vector4::new(1, 0, -1, -1),
-    Vector4::new(1, 1, 0, 0),
-    Vector4::new(1, 1, 0, 1),
-    Vector4::new(1, 1, 0, -1),
-    Vector4::new(1, 1, 1, 0),
-    Vector4::new(1, 1, 1, 1),
-    Vector4::new(1, 1, 1, -1),
-    Vector4::new(1, 1, -1, 0),
-    Vector4::new(1, 1, -1, 1),
-    Vector4::new(1, 1, -1, -1),
-    Vector4::new(1, -1, 0, 0),
-    Vector4::new(1, -1, 0, 1),
-    Vector4::new(1, -1, 0, -1),
-    Vector4::new(1, -1, 1, 0),
-    Vector4::new(1, -1, 1, 1),
-    Vector4::new(1, -1, 1, -1),
-    Vector4::new(1, -1, -1, 0),
-    Vector4::new(1, -1, -1, 1),
-    Vector4::new(1, -1, -1, -1),
-    Vector4::new(-1, 0, 0, 0),
-    Vector4::new(-1, 0, 0, 1),
-    Vector4::new(-1, 0, 0, -1),
-    Vector4::new(-1, 0, 1, 0),
-    Vector4::new(-1, 0, 1, 1),
-    Vector4::new(-1, 0, 1, -1),
-    Vector4::new(-1, 0, -1, 0),
-    Vector4::new(-1, 0, -1, 1),
-    Vector4::new(-1, 0, -1, -1),
-    Vector4::new(-1, 1, 0, 0),
-    Vector4::new(-1, 1, 0, 1),
-    Vector4::new(-1, 1, 0, -1),
-    Vector4::new(-1, 1, 1, 0),
-    Vector4::new(-1, 1, 1, 1),
-    Vector4::new(-1, 1, 1, -1),
-    Vector4::new(-1, 1, -1, 0),
-    Vector4::new(-1, 1, -1, 1),
-    Vector4::new(-1, 1, -1, -1),
-    Vector4::new(-1, -1, 0, 0),
-    Vector4::new(-1, -1, 0, 1),
-    Vector4::new(-1, -1, 0, -1),
-    Vector4::new(-1, -1, 1, 0),
-    Vector4::new(-1, -1, 1, 1),
-    Vector4::new(-1, -1, 1, -1),
-    Vector4::new(-1, -1, -1, 0),
-    Vector4::new(-1, -1, -1, 1),
-    Vector4::new(-1, -1, -1, -1),
-];
-
+lazy_static! {
+    static ref NEIGHBOURS_3: Vec<Vector3<isize>> = [[0, 1, -1], [0, 1, -1], [0, 1, -1]]
+        .iter()
+        .multi_cartesian_product()
+        .filter_map(|v| if v[..] == [&0, &0, &0][..] {
+            None
+        } else {
+            Some(v)
+        })
+        .map(|v| Vector3::new(*v[0], *v[1], *v[2]))
+        .collect();
+    static ref NEIGHBOURS_4: Vec<Vector4<isize>> = [[0, 1, -1], [0, 1, -1], [0, 1, -1], [0, 1, -1]]
+        .iter()
+        .multi_cartesian_product()
+        .filter_map(|v| if v[..] == [&0, &0, &0, &0][..] {
+            None
+        } else {
+            Some(v)
+        })
+        .map(|v| Vector4::new(*v[0], *v[1], *v[2], *v[3]))
+        .collect();
+}
 trait NDimVector: Hash + Eq + PartialEq + Copy + Clone {
     fn new_ndim(x: isize, y: isize) -> Self;
     fn neighbours(self) -> Box<dyn Iterator<Item = Self>>;

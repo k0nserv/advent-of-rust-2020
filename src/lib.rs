@@ -6,6 +6,9 @@ use std::time::{SystemTime, UNIX_EPOCH};
 #[macro_use]
 extern crate itertools;
 
+#[macro_use]
+extern crate lazy_static;
+
 #[allow(dead_code, unused_imports)]
 mod day01;
 mod day02;
