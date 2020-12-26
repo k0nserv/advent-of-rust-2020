@@ -6,7 +6,6 @@ use itertools::Itertools;
 
 use crate::math::{Vector3, Vector4};
 
-// TODO: Should really use lazy static for this
 lazy_static! {
     static ref NEIGHBOURS_3: Vec<Vector3<isize>> = [[0, 1, -1], [0, 1, -1], [0, 1, -1]]
         .iter()
