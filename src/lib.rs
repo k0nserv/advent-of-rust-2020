@@ -36,6 +36,7 @@ mod day23;
 mod day24;
 mod either;
 pub mod math;
+pub mod parser_combinators;
 
 pub use either::Either;
 
@@ -364,8 +365,8 @@ mod tests {
 
         let input = load_file("day18.txt");
 
-        assert_eq!(star_one(&input), 1);
-        assert_eq!(star_two(&input), 1);
+        assert_eq!(star_one(&input), 9535936849815);
+        assert_eq!(star_two(&input), 472171581333710);
     }
 
     #[test]
